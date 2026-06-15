@@ -41,6 +41,9 @@ export function registerTelegramExtension(ext: TelegramExtension): void {
 // ── Telegram send helper (exported for use by extensions) ────────────────────
 
 /** Send a plain-text message to a Telegram chat. Best-effort. */
+export { sendChart } from '../chart-api.js';
+export type { TopLevelSpec } from '../chart-api.js';
+
 export async function sendTelegramMessage(token: string, platformId: string, text: string): Promise<void> {
   const chatId = platformId.split(':').slice(1).join(':');
   if (!chatId) return;

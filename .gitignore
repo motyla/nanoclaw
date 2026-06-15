@@ -14,8 +14,9 @@ logs/
 # Groups - per-installation state, not tracked
 groups/*
 
-# Private command extensions — deployed via ~/runbot/deploy.sh, not tracked here
+# Private command extensions and bot-specific files — deployed via deploy.sh at runtime, not tracked here
 src/extensions/
+src/garmin-notifier.ts
 
 # Composer-managed CLAUDE.md artifacts (regenerated every spawn) and
 # per-group memory (CLAUDE.local.md) must never be committed.
