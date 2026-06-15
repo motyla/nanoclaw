@@ -4,6 +4,7 @@
  * Thin orchestrator: init DB, run migrations, start channel adapters,
  * start delivery polls, start sweep, handle shutdown.
  */
+import fs from 'node:fs';
 import path from 'path';
 
 import { backfillContainerConfigs } from './backfill-container-configs.js';
@@ -94,6 +95,17 @@ async function main(): Promise<void> {
   // 2. Container runtime
   ensureContainerRuntimeRunning();
   cleanupOrphans();
+
+  // 2.5 Optional private command extensions (not tracked in public fork).
+  // deploy.sh rsyncs src/extensions/ from ~/runbot before building.
+  // Works in both tsx dev (checks .ts) and compiled prod (checks .js).
+  const extJs = new URL('./extensions/index.js', import.meta.url).pathname;
+  const extTs = new URL('./extensions/index.ts', import.meta.url).pathname;
+  if (fs.existsSync(extJs)) {
+    await import(new URL('./extensions/index.js', import.meta.url).href);
+  } else if (fs.existsSync(extTs)) {
+    await import(new URL('./extensions/index.ts', import.meta.url).href);
+  }
 
   // 3. Channel adapters
   await initChannelAdapters((adapter: ChannelAdapter): ChannelSetup => {
