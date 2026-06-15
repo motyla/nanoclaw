@@ -97,14 +97,18 @@ async function main(): Promise<void> {
   cleanupOrphans();
 
   // 2.5 Optional private command extensions (not tracked in public fork).
-  // deploy.sh rsyncs src/extensions/ from ~/runbot before building.
-  // Works in both tsx dev (checks .ts) and compiled prod (checks .js).
-  const extJs = new URL('./extensions/index.js', import.meta.url).pathname;
-  const extTs = new URL('./extensions/index.ts', import.meta.url).pathname;
-  if (fs.existsSync(extJs)) {
-    await import(new URL('./extensions/index.js', import.meta.url).href);
-  } else if (fs.existsSync(extTs)) {
-    await import(new URL('./extensions/index.ts', import.meta.url).href);
+  // Each bot repo deploys one named file: src/extensions/<name>.ts → dist/extensions/<name>.js
+  // This scanner loads all of them automatically — no central index needed.
+  const extDir = new URL('./extensions', import.meta.url).pathname;
+  if (fs.existsSync(extDir)) {
+    const entries = fs.readdirSync(extDir);
+    const jsFiles = entries.filter((f) => f.endsWith('.js'));
+    const tsFiles = entries.filter((f) => f.endsWith('.ts'));
+    // In compiled prod mode .js files exist; in tsx dev mode only .ts files exist.
+    const toLoad = jsFiles.length ? jsFiles : tsFiles;
+    for (const file of toLoad) {
+      await import(new URL(`./extensions/${file}`, import.meta.url).href);
+    }
   }
 
   // 3. Channel adapters
