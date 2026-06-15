@@ -15,9 +15,11 @@ To refresh the data, the user sends the **/sync** command — it's handled on th
 
 Units: distance is meters (/1000 = km), duration is seconds (/60 = min), average_speed is m/s (*3.6 = km/h). Running pace min/km = (duration/60)/(distance/1000). Timestamps are ISO strings — use date()/datetime() for time math.
 
-Key tables: activity (workouts; filter on activity_type_key e.g. 'running','cycling'), sleep, heart_rate, stress, body_battery, respiration, steps, training_readiness, vo2_max, personal_record. Inspect columns with: bun /workspace/agent/query.js "SELECT * FROM activity LIMIT 1"
+Key tables: activity (workouts), sleep, heart_rate, stress, body_battery, respiration, steps, training_readiness, vo2_max, personal_record. Inspect columns with: bun /workspace/agent/query.js "SELECT * FROM activity LIMIT 1"
 
-When the user asks "my last run", filter activity_type_key='running' and ORDER BY start_ts DESC LIMIT 1. Don't return other activity types unless asked.
+Known activity_type_key values: 'running', 'trail_running', 'treadmill_running', 'lap_swimming', 'strength_training', 'elliptical'. To discover all types present: SELECT DISTINCT activity_type_key FROM activity.
+
+When the user asks about a specific sport, map it to the right key — e.g. "swim" or "swimming" → 'lap_swimming', "gym" or "weights" → 'strength_training'. Filter ORDER BY start_ts DESC LIMIT 1 for "last X". Don't mix activity types unless asked.
 
 Example — last run:
 bun /workspace/agent/query.js "SELECT activity_name, date(start_ts) day, round(distance/1000.0,2) km, round((duration/60.0)/(distance/1000.0),2) pace_min_km, round(average_hr) avg_hr FROM activity WHERE activity_type_key='running' ORDER BY start_ts DESC LIMIT 1"
