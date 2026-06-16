@@ -22,7 +22,13 @@ const FONT_SEARCH_DIRS = [
   `${process.env.HOME ?? ''}/.local/share/fonts`,
   `${process.env.HOME ?? ''}/.fonts`,
 ];
-const fontDirs = FONT_SEARCH_DIRS.filter(d => { try { return fs.statSync(d).isDirectory(); } catch { return false; } });
+const fontDirs = FONT_SEARCH_DIRS.filter((d) => {
+  try {
+    return fs.statSync(d).isDirectory();
+  } catch {
+    return false;
+  }
+});
 
 export type { TopLevelSpec };
 
