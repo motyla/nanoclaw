@@ -23,7 +23,7 @@ import { tryConsume } from './telegram-pairing.js';
 
 // ── Extension API ────────────────────────────────────────────────────────────
 
-export type CommandHandler = (token: string, platformId: string) => Promise<void>;
+export type CommandHandler = (token: string, platformId: string, args: string) => Promise<void>;
 
 export type TelegramExtension = {
   /** Return command Map entries given the resolved group folder (may be ''). */
@@ -238,12 +238,14 @@ function createHostCommandInterceptor(
 ): ChannelSetup['onInbound'] {
   return async (platformId, threadId, message) => {
     const { text } = readInboundFields(message);
-    const cmd = text.trim().split(/\s+/)[0]?.toLowerCase().split('@')[0];
+    const parts = text.trim().split(/\s+/);
+    const cmd = parts[0]?.toLowerCase().split('@')[0];
+    const args = parts.slice(1).join(' ');
     if (!cmd || !commands.has(cmd) || !getMessagingGroupByPlatform('telegram', platformId)) {
       hostOnInbound(platformId, threadId, message);
       return;
     }
-    await commands.get(cmd)!(token, platformId);
+    await commands.get(cmd)!(token, platformId, args);
   };
 }
 
