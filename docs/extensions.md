@@ -13,7 +13,7 @@ At startup, `src/index.ts` scans `src/extensions/` for `.js` files (`.ts` in dev
 ```typescript
 // src/channels/telegram.ts
 
-type CommandHandler = (token: string, platformId: string) => Promise<void>;
+type CommandHandler = (token: string, platformId: string, args: string) => Promise<void>;
 
 type TelegramExtension = {
   commands: (groupFolder: string) => Array<[string, CommandHandler]>;
@@ -28,6 +28,8 @@ function sendChart(token: string, platformId: string, spec: TopLevelSpec, captio
 ```
 
 `groupFolder` is the agent-group directory name under `groups/` (e.g. `dm-with-moty`). Extensions use it to locate their per-group SQLite databases.
+
+`args` is the text following the command (e.g. for `/activity 12345`, args is `"12345"`). Commands that don't need arguments can ignore it — TypeScript allows handlers with fewer parameters than the type requires.
 
 ## Chart API
 
@@ -58,6 +60,9 @@ registerTelegramExtension({
   commands: (groupFolder) => [
     ['/hello', async (token, platformId) => {
       await sendTelegramMessage(token, platformId, 'Hello!');
+    }],
+    ['/echo', async (token, platformId, args) => {
+      await sendTelegramMessage(token, platformId, args || '(nothing)');
     }],
   ],
   botCommands: () => [
